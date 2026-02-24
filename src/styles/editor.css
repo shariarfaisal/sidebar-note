@@ -1,0 +1,242 @@
+/* Tiptap Editor Styles */
+.sidebar-note-editor {
+  padding: 16px 20px;
+  min-height: calc(100vh - 48px);
+  outline: none;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  caret-color: var(--text-primary);
+}
+
+/* Placeholder */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--text-placeholder);
+  pointer-events: none;
+  height: 0;
+  font-style: normal;
+}
+
+/* Headings */
+.sidebar-note-editor h1 {
+  font-size: 1.75em;
+  font-weight: 700;
+  margin: 1em 0 0.4em;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-note-editor h2 {
+  font-size: 1.35em;
+  font-weight: 650;
+  margin: 0.9em 0 0.35em;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-note-editor h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  line-height: 1.4;
+}
+
+.sidebar-note-editor h1:first-child,
+.sidebar-note-editor h2:first-child,
+.sidebar-note-editor h3:first-child {
+  margin-top: 0;
+}
+
+/* Paragraphs */
+.sidebar-note-editor p {
+  margin: 0.5em 0;
+}
+
+/* Bold, Italic, etc */
+.sidebar-note-editor strong {
+  font-weight: 650;
+}
+
+.sidebar-note-editor em {
+  font-style: italic;
+}
+
+.sidebar-note-editor u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sidebar-note-editor s {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+/* Links */
+.sidebar-note-editor a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--text-tertiary);
+  cursor: pointer;
+  transition: text-decoration-color 0.15s;
+}
+
+.sidebar-note-editor a:hover {
+  text-decoration-color: var(--text-primary);
+}
+
+/* Inline Code */
+.sidebar-note-editor code {
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  font-size: 0.88em;
+  background: var(--bg-code);
+  padding: 2px 5px;
+  border-radius: 3px;
+  color: var(--text-primary);
+}
+
+/* Code Block */
+.sidebar-note-editor pre {
+  background: var(--bg-code);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin: 0.75em 0;
+  overflow-x: auto;
+  border: 1px solid var(--border-primary);
+}
+
+.sidebar-note-editor pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* Blockquote */
+.sidebar-note-editor blockquote {
+  border-left: 3px solid var(--border-secondary);
+  padding-left: 14px;
+  margin: 0.75em 0;
+  color: var(--text-secondary);
+}
+
+/* Lists */
+.sidebar-note-editor ul,
+.sidebar-note-editor ol {
+  padding-left: 24px;
+  margin: 0.5em 0;
+}
+
+.sidebar-note-editor li {
+  margin: 0.2em 0;
+}
+
+.sidebar-note-editor li p {
+  margin: 0;
+}
+
+/* Task List */
+.sidebar-note-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.sidebar-note-editor ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sidebar-note-editor ul[data-type="taskList"] li > label {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.sidebar-note-editor ul[data-type="taskList"] li > label input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--border-secondary);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  background: var(--bg-primary);
+}
+
+.sidebar-note-editor ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.sidebar-note-editor ul[data-type="taskList"] li > label input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--text-inverse);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.sidebar-note-editor ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+/* Horizontal Rule */
+.sidebar-note-editor hr {
+  border: none;
+  border-top: 1px solid var(--border-primary);
+  margin: 1.5em 0;
+}
+
+/* Images */
+.sidebar-note-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  margin: 0.5em 0;
+  cursor: default;
+}
+
+.sidebar-note-editor img.ProseMirror-selectednode {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Selection */
+.sidebar-note-editor ::selection {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"] .sidebar-note-editor ::selection {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Gapcursor */
+.sidebar-note-editor .ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+}
+
+.sidebar-note-editor .ProseMirror-gapcursor:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid var(--text-primary);
+  animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes ProseMirror-cursor-blink {
+  to { visibility: hidden; }
+}
