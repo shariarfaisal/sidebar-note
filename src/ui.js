@@ -14,20 +14,26 @@ import {
 } from './notes.js';
 import {
   setContent,
+  setContentWithImages,
   focusEditor,
   getMarkdown,
+  getMarkdownForStorage,
   getEditor,
   toggleBold,
   toggleItalic,
   toggleUnderline,
   toggleStrike,
+  toggleTaskList,
   toggleCode,
   toggleLink,
 } from './editor.js';
 import { exportCurrentNote } from './export.js';
+import { storage } from './storage.js';
 
+const SCROLL_KEY = 'sidebar_scroll_positions';
 let currentNoteId = null;
 let isListOpen = false;
+let scrollSaveTimer = null;
 
 // Debounce auto-save
 let saveTimer = null;
@@ -36,8 +42,43 @@ function debounceSave(content) {
   saveTimer = setTimeout(async () => {
     if (currentNoteId) {
       await updateNote(currentNoteId, { content });
+      saveScrollPosition();
     }
   }, 400);
+}
+
+// Scroll position persistence
+async function getScrollPositions() {
+  return (await storage.get(SCROLL_KEY)) || {};
+}
+
+async function saveScrollPosition() {
+  if (!currentNoteId) return;
+  const container = document.getElementById('editor-container');
+  if (!container) return;
+  const positions = await getScrollPositions();
+  positions[currentNoteId] = container.scrollTop;
+  await storage.set(SCROLL_KEY, positions);
+}
+
+async function restoreScrollPosition(noteId) {
+  const positions = await getScrollPositions();
+  const scrollTop = positions[noteId] || 0;
+  const container = document.getElementById('editor-container');
+  if (container) {
+    // Delay to let editor render first
+    requestAnimationFrame(() => {
+      container.scrollTop = scrollTop;
+    });
+  }
+}
+
+function setupScrollPersistence() {
+  const container = document.getElementById('editor-container');
+  container.addEventListener('scroll', () => {
+    clearTimeout(scrollSaveTimer);
+    scrollSaveTimer = setTimeout(() => saveScrollPosition(), 300);
+  });
 }
 
 // Title change handler
@@ -112,10 +153,11 @@ async function loadNote(id) {
 
   const titleInput = document.getElementById('note-title');
   titleInput.value = note.title || '';
-  setContent(note.content || '');
+  await setContentWithImages(note.content || '');
   updatePinButton(note.pinned);
   closeNoteList();
   focusEditor();
+  await restoreScrollPosition(note.id);
 }
 
 // Open / close note list
@@ -175,7 +217,7 @@ async function handleDuplicate() {
     currentNoteId = note.id;
     const titleInput = document.getElementById('note-title');
     titleInput.value = note.title || '';
-    setContent(note.content || '');
+    await setContentWithImages(note.content || '');
     updatePinButton(note.pinned);
   }
   closeDropdown();
@@ -199,6 +241,36 @@ function updatePinButton(pinned) {
 function handleExport() {
   const title = document.getElementById('note-title').value;
   exportCurrentNote(title);
+}
+
+async function handleCopyMarkdown() {
+  const content = getMarkdown();
+  const btn = document.getElementById('btn-copy');
+  const originalTitle = btn.title;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(content);
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = content;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      textarea.remove();
+    }
+    btn.title = 'Copied';
+  } catch (error) {
+    console.error('Failed to copy markdown:', error);
+    btn.title = 'Copy failed';
+  } finally {
+    closeDropdown();
+    setTimeout(() => {
+      btn.title = originalTitle;
+    }, 1200);
+  }
 }
 
 // Search
@@ -245,6 +317,7 @@ function setupFormatToolbar() {
         italic: toggleItalic,
         underline: toggleUnderline,
         strike: toggleStrike,
+        task: toggleTaskList,
         code: toggleCode,
         link: toggleLink,
       };
@@ -267,14 +340,37 @@ function updateFormatToolbar() {
     return;
   }
 
-  // Position toolbar above selection
-  const editorEl = document.getElementById('editor');
-  const editorRect = editorEl.getBoundingClientRect();
+  // Get viewport-relative coordinates for the selection
   const coords = editor.view.coordsAtPos(from);
+  const editorContainer = document.getElementById('editor-container');
+  const containerRect = editorContainer.getBoundingClientRect();
+
+  // Only show if selection is within the visible editor area
+  if (coords.top < containerRect.top || coords.top > containerRect.bottom) {
+    toolbar.classList.add('hidden');
+    return;
+  }
 
   toolbar.classList.remove('hidden');
-  toolbar.style.top = `${coords.top - editorRect.top - 44}px`;
-  toolbar.style.left = `${Math.max(0, Math.min(coords.left - editorRect.left, editorRect.width - 220))}px`;
+  const toolbarHeight = toolbar.offsetHeight || 36;
+  const toolbarWidth = toolbar.offsetWidth || 280;
+  const topbarHeight = document.getElementById('topbar').offsetHeight;
+
+  // Position relative to #app (which is at viewport origin)
+  let top = coords.top - toolbarHeight - 8;
+  // Clamp: don't overlap the topbar
+  if (top < topbarHeight + 4) {
+    // Show below selection instead
+    const coordsEnd = editor.view.coordsAtPos(to);
+    top = coordsEnd.bottom + 8;
+  }
+
+  let left = coords.left;
+  // Clamp horizontally
+  left = Math.max(8, Math.min(left, window.innerWidth - toolbarWidth - 8));
+
+  toolbar.style.top = `${top}px`;
+  toolbar.style.left = `${left}px`;
 }
 
 // Escape HTML
@@ -299,6 +395,7 @@ export function initUI(onContentChange) {
   document.getElementById('btn-more').addEventListener('click', toggleDropdown);
   document.getElementById('btn-pin').addEventListener('click', handleTogglePin);
   document.getElementById('btn-duplicate').addEventListener('click', handleDuplicate);
+  document.getElementById('btn-copy').addEventListener('click', handleCopyMarkdown);
   document.getElementById('btn-delete').addEventListener('click', handleDeleteNote);
 
   // Close dropdown on outside click
@@ -312,6 +409,8 @@ export function initUI(onContentChange) {
 
   setupTitleInput();
   setupSearch();
+  setupFormatToolbar();
+  setupScrollPersistence();
 
   return { debounceSave, loadNote, handleNewNote, updateFormatToolbar };
 }

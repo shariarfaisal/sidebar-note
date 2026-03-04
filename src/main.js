@@ -1,21 +1,42 @@
 import { createEditor } from './editor.js';
 import { initTheme, toggleTheme } from './theme.js';
 import { initUI, loadInitialNote } from './ui.js';
+import { initChat, activateTerminal } from './chat.js';
+
+function setupViewTabs() {
+  const tabs = document.querySelectorAll('#view-tabs button');
+  const notesEls = [document.getElementById('topbar'), document.getElementById('editor-container'), document.getElementById('note-list-panel')];
+  const chatContainer = document.getElementById('chat-container');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      const view = tab.dataset.view;
+      if (view === 'terminal') {
+        notesEls.forEach((el) => el.style.display = 'none');
+        chatContainer.classList.add('active');
+        activateTerminal();
+      } else {
+        chatContainer.classList.remove('active');
+        document.getElementById('topbar').style.display = '';
+        document.getElementById('editor-container').style.display = '';
+      }
+    });
+  });
+}
 
 async function init() {
-  // Initialize theme
   await initTheme();
 
-  // Initialize UI and get callbacks
   const { debounceSave, updateFormatToolbar } = initUI();
 
-  // Create editor
   const editorEl = document.getElementById('editor');
   const editor = createEditor(editorEl, (content) => {
     debounceSave(content);
   });
 
-  // Format toolbar on selection change
   editor.on('selectionUpdate', () => updateFormatToolbar());
   editor.on('blur', () => {
     setTimeout(() => {
@@ -23,11 +44,12 @@ async function init() {
     }, 200);
   });
 
-  // Theme toggle
   document.getElementById('btn-theme').addEventListener('click', toggleTheme);
 
-  // Load initial note
   await loadInitialNote();
+
+  initChat();
+  setupViewTabs();
 }
 
 document.addEventListener('DOMContentLoaded', init);

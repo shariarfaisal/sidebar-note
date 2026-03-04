@@ -17,7 +17,7 @@ body {
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-primary);
-  background: var(--bg-primary);
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -62,7 +62,7 @@ body {
   gap: 4px;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   z-index: 10;
   flex-shrink: 0;
 }
@@ -175,6 +175,7 @@ body {
   gap: 4px;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
   flex-shrink: 0;
 }
 

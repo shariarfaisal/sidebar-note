@@ -1,0 +1,13 @@
+{
+  "name": "sidebar-note-terminal",
+  "version": "1.0.0",
+  "description": "Local terminal server for Sidebar Note extension",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "node-pty": "^1.0.0",
+    "ws": "^8.17.0"
+  }
+}

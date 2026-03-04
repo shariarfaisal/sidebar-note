@@ -105,6 +105,7 @@ export function searchNotes(notes, query) {
 export function extractPreview(content, maxLen = 80) {
   if (!content) return 'No content';
   const plain = content
+    .replace(/::task\[(todo|doing|done)\]\s*/g, '')
     .replace(/#{1,3}\s/g, '')
     .replace(/[*_~`>\-\[\]()!]/g, '')
     .replace(/\n+/g, ' ')

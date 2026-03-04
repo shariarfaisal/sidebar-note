@@ -1,0 +1,248 @@
+/* Bottom tab bar */
+#view-tabs {
+  display: flex;
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+#view-tabs button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0;
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+#view-tabs button:hover {
+  background: var(--bg-hover);
+}
+
+#view-tabs button.active {
+  color: var(--accent);
+}
+
+#view-tabs button svg {
+  flex-shrink: 0;
+}
+
+/* Terminal container */
+#chat-container {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: #1c1c1e;
+}
+
+[data-theme="light"] #chat-container {
+  background: #ffffff;
+}
+
+#chat-container.active {
+  display: flex;
+}
+
+/* Terminal tab bar */
+#terminal-tabs {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  flex-shrink: 0;
+  background: #1c1c1e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 2px;
+}
+
+[data-theme="light"] #terminal-tabs {
+  background: #f0f0f0;
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+#terminal-tab-list {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+#terminal-tab-list::-webkit-scrollbar {
+  display: none;
+}
+
+.terminal-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.5);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.terminal-tab:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.terminal-tab.active {
+  color: #f2f2f7;
+  border-bottom-color: var(--accent);
+}
+
+[data-theme="light"] .terminal-tab {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .terminal-tab:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .terminal-tab.active {
+  color: #1f2329;
+  border-bottom-color: var(--accent);
+}
+
+.terminal-tab .close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  font-size: 12px;
+  line-height: 1;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+  opacity: 0.6;
+  padding: 0;
+}
+
+.terminal-tab:hover .close-btn {
+  display: inline-flex;
+}
+
+.terminal-tab .close-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .terminal-tab .close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+#btn-new-terminal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  font-size: 16px;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.4);
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+#btn-new-terminal:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] #btn-new-terminal {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] #btn-new-terminal:hover {
+  color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Terminal content area */
+#terminal-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  padding: 2px 0 0 4px;
+}
+
+.terminal-pane {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  right: 0;
+  bottom: 0;
+  display: none;
+}
+
+.terminal-pane.active {
+  display: block;
+}
+
+.terminal-pane .xterm {
+  height: 100%;
+  padding: 0;
+}
+
+.terminal-pane .xterm-screen {
+  height: 100% !important;
+}
+
+.terminal-pane .xterm-scrollable-element.mac {
+  height: 100%;
+}
+
+.terminal-pane .xterm-viewport {
+  scrollbar-width: none;
+}
+
+.terminal-pane .xterm-viewport::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+/* Status overlay */
+.terminal-status {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  z-index: 5;
+}
+
+.terminal-status.error {
+  color: var(--text-tertiary);
+}
