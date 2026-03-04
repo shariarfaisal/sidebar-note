@@ -45,33 +45,33 @@ function getThemeColors() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
   return {
-    background: isDark ? '#1c1c1e' : '#ffffff',
-    foreground: isDark ? '#f2f2f7' : '#1f2329',
-    cursor: isDark ? '#f2cf67' : '#2e333a',
-    cursorAccent: isDark ? '#1c1c1e' : '#ffffff',
-    selectionBackground: isDark ? 'rgba(242, 207, 103, 0.25)' : 'rgba(46, 51, 58, 0.2)',
-    black: isDark ? '#1c1c1e' : '#1f2329',
-    red: isDark ? '#ff7b7b' : '#c23a3a',
-    green: isDark ? '#98c379' : '#16803c',
-    yellow: isDark ? '#d19a66' : '#c2410c',
-    blue: isDark ? '#61afef' : '#1d4ed8',
-    magenta: isDark ? '#c678dd' : '#7c3aed',
-    cyan: isDark ? '#56b6c2' : '#0891b2',
-    white: isDark ? '#f2f2f7' : '#1f2329',
-    brightBlack: isDark ? '#5c6370' : '#8a9099',
-    brightRed: isDark ? '#ff7b7b' : '#c23a3a',
-    brightGreen: isDark ? '#98c379' : '#16803c',
-    brightYellow: isDark ? '#d19a66' : '#c2410c',
-    brightBlue: isDark ? '#61afef' : '#1d4ed8',
+    background: isDark ? '#1c1c1e' : '#f8f8f8',
+    foreground: isDark ? '#f2f2f7' : '#1a1a1a',
+    cursor: isDark ? '#f2cf67' : '#1a1a1a',
+    cursorAccent: isDark ? '#1c1c1e' : '#f8f8f8',
+    selectionBackground: isDark ? 'rgba(242, 207, 103, 0.25)' : 'rgba(0, 90, 200, 0.18)',
+    black: isDark ? '#1c1c1e' : '#1a1a1a',
+    red: isDark ? '#ff7b7b' : '#cd3131',
+    green: isDark ? '#98c379' : '#007a2a',
+    yellow: isDark ? '#d19a66' : '#b45309',
+    blue: isDark ? '#61afef' : '#0451a5',
+    magenta: isDark ? '#c678dd' : '#8b2fb0',
+    cyan: isDark ? '#56b6c2' : '#0e7490',
+    white: isDark ? '#f2f2f7' : '#3a3a3a',
+    brightBlack: isDark ? '#5c6370' : '#666666',
+    brightRed: isDark ? '#ff7b7b' : '#b91c1c',
+    brightGreen: isDark ? '#98c379' : '#15803d',
+    brightYellow: isDark ? '#d19a66' : '#a16207',
+    brightBlue: isDark ? '#61afef' : '#1e40af',
     brightMagenta: isDark ? '#c678dd' : '#7c3aed',
-    brightCyan: isDark ? '#56b6c2' : '#0891b2',
-    brightWhite: isDark ? '#f2f2f7' : '#1f2329',
+    brightCyan: isDark ? '#56b6c2' : '#0d6e82',
+    brightWhite: isDark ? '#f2f2f7' : '#1a1a1a',
   };
 }
 
 function getTerminalBg() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  return isDark ? '#1c1c1e' : '#ffffff';
+  return isDark ? '#1c1c1e' : '#f8f8f8';
 }
 
 function updateContainerBg() {

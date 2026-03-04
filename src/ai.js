@@ -2,6 +2,29 @@ import { getEditor, getMarkdown } from './editor.js';
 
 const AI_ENDPOINT = 'http://localhost:8768/api/ai/chat';
 
+export const AI_MODELS = [
+  { id: 'gpt-5-mini', label: 'GPT-5 Mini' },
+  { id: 'gpt-5', label: 'GPT-5' },
+  { id: 'gpt-5-nano', label: 'GPT-5 Nano' },
+  { id: 'gpt-5-chat', label: 'GPT-5 Chat (Preview)' },
+  { id: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
+  { id: 'gpt-4.1', label: 'GPT-4.1' },
+  { id: 'o4-mini', label: 'o4 Mini' },
+  { id: 'o3-mini', label: 'o3 Mini' },
+  { id: 'DeepSeek-R1', label: 'DeepSeek R1' },
+  { id: 'Meta-Llama-3.1-405B-Instruct', label: 'Llama 3.1 405B' },
+];
+
+let selectedModel = AI_MODELS[0].id;
+
+export function getSelectedModel() {
+  return selectedModel;
+}
+
+export function setSelectedModel(modelId) {
+  selectedModel = modelId;
+}
+
 const SYSTEM_PROMPTS = {
   rewrite: 'Rewrite the following text to improve clarity and readability. Keep the same meaning and tone. Return only the rewritten text, no explanation.',
   summarize: 'Summarize the following text concisely. Return only the summary, no explanation.',
@@ -23,7 +46,7 @@ export function streamChat(messages, { onToken, onDone, onError }) {
       const res = await fetch(AI_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ messages, model: selectedModel }),
         signal: controller.signal,
       });
 
@@ -82,7 +105,21 @@ export function getNoteContext() {
  * Run an inline AI action on the current editor selection.
  * Shows a floating indicator while processing.
  */
-export function runInlineAction(action) {
+/**
+ * Export chat messages as a markdown string.
+ */
+export function exportChatAsMarkdown(messages) {
+  const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  let md = `# AI Chat Export\n**Date:** ${date}\n\n---\n\n`;
+  for (const msg of messages) {
+    const label = msg.role === 'user' ? 'You' : 'Assistant';
+    const text = typeof msg.content === 'string' ? msg.content : msg.content.filter(c => c.type === 'text').map(c => c.text).join('\n');
+    md += `**${label}:** ${text}\n\n---\n\n`;
+  }
+  return md;
+}
+
+export function runInlineAction(action, customPrompt) {
   const editor = getEditor();
   if (!editor) return;
 
@@ -92,7 +129,9 @@ export function runInlineAction(action) {
   const selectedText = editor.state.doc.textBetween(from, to, '\n');
   if (!selectedText.trim()) return;
 
-  const systemPrompt = SYSTEM_PROMPTS[action];
+  const systemPrompt = action === 'custom'
+    ? `${customPrompt}. Apply this to the following text. Return only the result, no explanation.`
+    : SYSTEM_PROMPTS[action];
   if (!systemPrompt) return;
 
   // Show loading indicator

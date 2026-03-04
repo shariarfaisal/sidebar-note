@@ -60,7 +60,11 @@ async function init() {
   editor.on('selectionUpdate', () => updateFormatToolbar());
   editor.on('blur', () => {
     setTimeout(() => {
-      document.getElementById('format-toolbar').classList.add('hidden');
+      const toolbar = document.getElementById('format-toolbar');
+      // Don't hide if custom input is focused
+      if (toolbar.contains(document.activeElement)) return;
+      toolbar.classList.add('hidden');
+      toolbar.querySelector('.toolbar-custom-row')?.classList.remove('visible');
     }, 200);
   });
 

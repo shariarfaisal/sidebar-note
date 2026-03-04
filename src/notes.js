@@ -28,7 +28,7 @@ export async function createNote() {
   const notes = await getAllNotes();
   const note = {
     id: generateId(),
-    title: '',
+    title: `Note — ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
     content: '',
     pinned: false,
     createdAt: Date.now(),

@@ -248,7 +248,7 @@ const server = http.createServer(async (req, res) => {
               'Authorization': `Bearer ${ghToken}`,
             },
             body: JSON.stringify({
-              model: 'gpt-4o-mini',
+              model: body.model || 'gpt-4o-mini',
               messages: body.messages,
               stream: true,
             }),

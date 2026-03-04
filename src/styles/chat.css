@@ -46,7 +46,7 @@
 }
 
 [data-theme="light"] #chat-container {
-  background: #ffffff;
+  background: #f8f8f8;
 }
 
 #chat-container.active {
@@ -66,7 +66,7 @@
 
 [data-theme="light"] #terminal-tabs {
   background: #f0f0f0;
-  border-bottom-color: rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 #terminal-tab-list {
