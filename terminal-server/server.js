@@ -475,6 +475,24 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case 'getCwd': {
+        const entry = processes.get(msg.id);
+        if (entry) {
+          let cwd = null;
+          try {
+            const pid = entry.pty.pid;
+            const output = require('child_process').execSync(
+              `lsof -a -d cwd -p ${pid} -Fn 2>/dev/null`,
+              { encoding: 'utf8', timeout: 2000 }
+            );
+            const match = output.match(/\nn(.*)/);
+            if (match) cwd = match[1];
+          } catch {}
+          ws.send(JSON.stringify({ type: 'cwd', id: msg.id, cwd }));
+        }
+        break;
+      }
+
       case 'kill': {
         const entry = processes.get(msg.id);
         if (entry) {

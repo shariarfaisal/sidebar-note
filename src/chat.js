@@ -7,7 +7,6 @@ const WS_URL = 'ws://localhost:8768';
 
 let ws = null;
 let reconnectTimer = null;
-let terminalCounter = 0;
 let bridgeHandler = null;
 
 // Map of id → { terminal, fitAddon, containerEl, tabEl }
@@ -25,7 +24,7 @@ function saveSession() {
   for (const [id, entry] of terminals) {
     terminalList.push({ id, label: entry.label });
   }
-  const session = { terminals: terminalList, activeId, counter: terminalCounter };
+  const session = { terminals: terminalList, activeId };
   chrome.storage.local.set({ [SESSION_KEY]: session });
 }
 
@@ -39,6 +38,22 @@ async function loadSession() {
 
 function clearSession() {
   chrome.storage.local.remove(SESSION_KEY);
+}
+
+// Clean up old per-window session keys and counter from previous code versions
+async function cleanupLegacyKeys() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(null, (allData) => {
+      const legacyKeys = Object.keys(allData).filter(
+        (k) => k.startsWith('sidebar_terminal_session_') || k === 'sidebar_terminal_counter'
+      );
+      if (legacyKeys.length > 0) {
+        chrome.storage.local.remove(legacyKeys, resolve);
+      } else {
+        resolve();
+      }
+    });
+  });
 }
 
 function getThemeColors() {
@@ -80,10 +95,22 @@ function updateContainerBg() {
   if (container) container.style.backgroundColor = bg;
 }
 
-function createTerminal() {
+function getNextTerminalNumber() {
+  // Find the highest existing terminal number and add 1
+  let max = 0;
+  for (const [, entry] of terminals) {
+    const match = entry.label.match(/^Terminal (\d+)$/);
+    if (match) {
+      max = Math.max(max, parseInt(match[1], 10));
+    }
+  }
+  return max + 1;
+}
+
+function createTerminal(cwd) {
   const id = generateId();
-  terminalCounter++;
-  const label = `Terminal ${terminalCounter}`;
+  const num = getNextTerminalNumber();
+  const label = `Terminal ${num}`;
 
   const container = document.getElementById('terminal-container');
 
@@ -156,7 +183,7 @@ function createTerminal() {
   // Spawn PTY on server
   if (ws && ws.readyState === WebSocket.OPEN) {
     const dims = fitAddon.proposeDimensions() || { cols: 80, rows: 24 };
-    ws.send(JSON.stringify({ type: 'spawn', id, cols: dims.cols, rows: dims.rows }));
+    ws.send(JSON.stringify({ type: 'spawn', id, cols: dims.cols, rows: dims.rows, cwd: cwd || undefined }));
   }
 
   saveSession();
@@ -304,6 +331,9 @@ function connect() {
     // Register as browser bridge
     bridgeHandler = initBridge(ws);
 
+    // Clean up old per-window session keys from previous code
+    await cleanupLegacyKeys();
+
     // If we already have terminals in memory (WS reconnect), re-attach them
     if (terminals.size > 0) {
       for (const [id, entry] of terminals) {
@@ -316,7 +346,6 @@ function connect() {
     // Try to restore a saved session
     const session = await loadSession();
     if (session && session.terminals && session.terminals.length > 0) {
-      terminalCounter = session.counter || session.terminals.length;
       // Recreate xterm instances + tabs from saved session
       for (const saved of session.terminals) {
         restoreTerminalInstance(saved.id, saved.label);
@@ -408,7 +437,32 @@ export function initChat() {
   // New terminal button
   document.getElementById('btn-new-terminal').addEventListener('click', () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
-      createTerminal();
+      if (activeId && terminals.has(activeId)) {
+        // Request cwd of active terminal, then spawn new one in same directory
+        const reqId = activeId;
+        let done = false;
+        const handler = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'cwd' && msg.id === reqId) {
+              done = true;
+              ws.removeEventListener('message', handler);
+              clearTimeout(timeoutId);
+              createTerminal(msg.cwd || undefined);
+            }
+          } catch {}
+        };
+        ws.addEventListener('message', handler);
+        ws.send(JSON.stringify({ type: 'getCwd', id: reqId }));
+        const timeoutId = setTimeout(() => {
+          if (!done) {
+            ws.removeEventListener('message', handler);
+            createTerminal();
+          }
+        }, 1000);
+      } else {
+        createTerminal();
+      }
     }
   });
 

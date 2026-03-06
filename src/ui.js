@@ -763,6 +763,40 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// Handle notes changed from another window
+async function handleExternalNotesChange(newNotes) {
+  // Re-render note list if open
+  if (isListOpen) {
+    renderNoteList();
+  }
+
+  if (!currentNoteId) return;
+
+  const note = newNotes?.find((n) => n.id === currentNoteId);
+
+  if (!note) {
+    // Current note was deleted externally — load first available
+    if (newNotes && newNotes.length > 0) {
+      const sorted = sortNotes(newNotes);
+      await loadNote(sorted[0].id);
+    } else {
+      await handleNewNote();
+    }
+    return;
+  }
+
+  // If editor is idle (no pending save), update content
+  if (saveTimer === null) {
+    const titleInput = document.getElementById('note-title');
+    if (titleInput.value !== (note.title || '')) {
+      titleInput.value = note.title || '';
+    }
+    await setContentWithImages(note.content || '');
+    updatePinButton(note.pinned);
+  }
+  // If editor is dirty (saveTimer !== null), skip — last-write-wins
+}
+
 // Initialize UI bindings
 export function initUI(onContentChange) {
   // Menu
@@ -796,7 +830,7 @@ export function initUI(onContentChange) {
   setupAIChat();
   setupScrollPersistence();
 
-  return { debounceSave, loadNote, handleNewNote, updateFormatToolbar };
+  return { debounceSave, loadNote, handleNewNote, updateFormatToolbar, handleExternalNotesChange };
 }
 
 // Load initial note or create first one

@@ -1,5 +1,16 @@
 const isExtension = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
 
+// Track keys written by this window to ignore our own onChanged events
+const pendingWrites = new Set();
+
+export function wasLocalWrite(key) {
+  if (pendingWrites.has(key)) {
+    pendingWrites.delete(key);
+    return true;
+  }
+  return false;
+}
+
 export const storage = {
   async get(key) {
     if (isExtension) {
@@ -13,6 +24,7 @@ export const storage = {
 
   async set(key, value) {
     if (isExtension) {
+      pendingWrites.add(key);
       return new Promise((resolve) => {
         chrome.storage.local.set({ [key]: value }, resolve);
       });
@@ -22,6 +34,7 @@ export const storage = {
 
   async remove(key) {
     if (isExtension) {
+      pendingWrites.add(key);
       return new Promise((resolve) => {
         chrome.storage.local.remove(key, resolve);
       });

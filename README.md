@@ -63,6 +63,84 @@ The AI proxy uses your local `gh auth token` at runtime — no API keys are stor
 
 Supported platforms: **macOS** (launchd) and **Linux** (systemd).
 
+## MCP Setup (AI Agent Integration)
+
+Sidebar Note includes an MCP (Model Context Protocol) server that lets AI agents like Claude and GitHub Copilot control your browser and manage your notes programmatically. The MCP server exposes tools for browser automation (click, type, navigate, screenshot, etc.) and full notes CRUD.
+
+### For Claude Code (CLI)
+
+The project already includes a `.mcp.json` file, so Claude Code will auto-detect it when you run `claude` from the project directory. No extra setup needed.
+
+To add it manually to Claude Code's global config (`~/.claude.json`):
+
+```json
+{
+  "mcpServers": {
+    "browser-control": {
+      "command": "node",
+      "args": ["/absolute/path/to/sidebar-note/terminal-server/mcp-server.js"]
+    }
+  }
+}
+```
+
+### For Claude Desktop
+
+Add the following to your Claude Desktop config file:
+
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "browser-control": {
+      "command": "node",
+      "args": ["/absolute/path/to/sidebar-note/terminal-server/mcp-server.js"]
+    }
+  }
+}
+```
+
+### For GitHub Copilot (VS Code)
+
+1. Open VS Code Settings (`Cmd+,` / `Ctrl+,`)
+2. Search for `github.copilot.chat.mcpServers`
+3. Click **Edit in settings.json** and add:
+
+```json
+{
+  "github.copilot.chat.mcpServers": {
+    "browser-control": {
+      "command": "node",
+      "args": ["/absolute/path/to/sidebar-note/terminal-server/mcp-server.js"]
+    }
+  }
+}
+```
+
+Alternatively, create a `.vscode/mcp.json` file in the project root:
+
+```json
+{
+  "servers": {
+    "browser-control": {
+      "command": "node",
+      "args": ["${workspaceFolder}/terminal-server/mcp-server.js"]
+    }
+  }
+}
+```
+
+### Available MCP Tools
+
+| Category | Tools |
+|----------|-------|
+| **Browser** | `browser_eval`, `browser_dom`, `browser_click`, `browser_type`, `browser_screenshot`, `browser_url`, `browser_navigate`, `browser_content`, `browser_interactive_elements`, `browser_tabs`, `browser_close_tab`, `browser_back`, `browser_forward`, `browser_keyboard`, `browser_hover`, `browser_wait`, `browser_fill_form`, `browser_network`, `browser_console` |
+| **Notes** | `notes_list`, `notes_get`, `notes_create`, `notes_update`, `notes_delete`, `notes_image`, `notes_search` |
+
+> **Note:** The terminal server must be running (`./setup.sh` sets it up as a background service) for MCP tools to work.
+
 ## Development
 
 ```bash

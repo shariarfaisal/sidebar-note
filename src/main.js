@@ -1,7 +1,9 @@
 import { createEditor } from './editor.js';
-import { initTheme, toggleTheme } from './theme.js';
+import { initTheme, applyTheme, toggleTheme } from './theme.js';
 import { initUI, loadInitialNote } from './ui.js';
 import { initChat, activateTerminal } from './chat.js';
+import { initSync } from './sync.js';
+import { setSelectedModel, AI_MODELS } from './ai.js';
 
 const VIEW_KEY = 'sidebar_active_view';
 
@@ -50,7 +52,7 @@ function setupViewTabs() {
 async function init() {
   await initTheme();
 
-  const { debounceSave, updateFormatToolbar } = initUI();
+  const { debounceSave, updateFormatToolbar, handleExternalNotesChange } = initUI();
 
   const editorEl = document.getElementById('editor');
   const editor = createEditor(editorEl, (content) => {
@@ -71,6 +73,18 @@ async function init() {
   document.getElementById('btn-theme').addEventListener('click', toggleTheme);
 
   await loadInitialNote();
+
+  initSync({
+    onNotesChanged: handleExternalNotesChange,
+    onThemeChanged: (newTheme) => applyTheme(newTheme),
+    onModelChanged: (newModel) => {
+      if (newModel && AI_MODELS.some((m) => m.id === newModel)) {
+        setSelectedModel(newModel);
+        const modelSelect = document.getElementById('ai-model-select');
+        if (modelSelect) modelSelect.value = newModel;
+      }
+    },
+  });
 
   initChat();
   setupViewTabs();
