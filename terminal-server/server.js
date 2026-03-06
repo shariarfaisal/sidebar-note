@@ -14,7 +14,9 @@ try {
 }
 
 const PORT = 8768;
-const shell = os.platform() === 'win32' ? 'powershell.exe' : '/bin/zsh';
+const shell = os.platform() === 'win32'
+  ? 'powershell.exe'
+  : process.env.SHELL || '/bin/zsh';
 
 // Bridge WS connection (from the Chrome extension sidepanel)
 let bridgeWs = null;
@@ -481,12 +483,34 @@ wss.on('connection', (ws) => {
           let cwd = null;
           try {
             const pid = entry.pty.pid;
-            const output = require('child_process').execSync(
-              `lsof -a -d cwd -p ${pid} -Fn 2>/dev/null`,
-              { encoding: 'utf8', timeout: 2000 }
-            );
-            const match = output.match(/\nn(.*)/);
-            if (match) cwd = match[1];
+            if (os.platform() === 'win32') {
+              // Windows: use PowerShell to get process working directory
+              const output = require('child_process').execSync(
+                `powershell -Command "(Get-Process -Id ${pid}).Path | Split-Path; (Get-CimInstance Win32_Process -Filter \\"ProcessId=${pid}\\").CommandLine"`,
+                { encoding: 'utf8', timeout: 3000 }
+              );
+              // Fallback: read cwd from /proc-like approach via handle.exe or pwsh
+              const pwshOutput = require('child_process').execSync(
+                `powershell -Command "[System.Diagnostics.Process]::GetProcessById((Get-CimInstance Win32_Process -Filter 'ParentProcessId=${pid}' | Select-Object -First 1).ProcessId).MainModule.FileName | Split-Path"`,
+                { encoding: 'utf8', timeout: 3000 }
+              ).trim();
+              if (pwshOutput) cwd = pwshOutput;
+            } else if (os.platform() === 'linux') {
+              // Linux: read /proc/<pid>/cwd symlink
+              const output = require('child_process').execSync(
+                `readlink /proc/${pid}/cwd 2>/dev/null`,
+                { encoding: 'utf8', timeout: 2000 }
+              ).trim();
+              if (output) cwd = output;
+            } else {
+              // macOS: use lsof
+              const output = require('child_process').execSync(
+                `lsof -a -d cwd -p ${pid} -Fn 2>/dev/null`,
+                { encoding: 'utf8', timeout: 2000 }
+              );
+              const match = output.match(/\nn(.*)/);
+              if (match) cwd = match[1];
+            }
           } catch {}
           ws.send(JSON.stringify({ type: 'cwd', id: msg.id, cwd }));
         }
